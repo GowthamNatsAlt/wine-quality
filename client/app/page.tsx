@@ -1,10 +1,16 @@
 "use client";
 
+import axios from "axios";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import Link from 'next/link'
+
 // Heading font import
 import { Yeseva_One } from "next/font/google";
 
 // Form imports
-import { z } from 'zod';
+import { string, z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
@@ -33,6 +39,9 @@ function convertToTitleCase(str: String) {
 }
 
 export default function Home() {
+  const [wine, setWine] = useState<string | null>(null);
+  const router = useRouter();
+
   // Form resolver
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,8 +61,24 @@ export default function Home() {
   });
 
   // Form submit function
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await toast.promise(
+      axios.post('http://localhost:8000/quality', values)
+        .then((response) => {
+          setWine(response.data.wine_quality);
+        })
+        .catch((err) => console.error(err))
+      , 
+      {
+        loading: "Analyzing wine macros.",
+        success: "Wine analysis successful.",
+        error: (err) => `This just happened: ${err.toString()}`,
+      }
+    )
+
+    const response = await axios.post('http://localhost:8000/quality', values);
+    router.push("#results");
+    setWine(response.data.wine_quality);
   }
 
   return (
@@ -103,9 +128,14 @@ export default function Home() {
       </section>
       
       {/* Results section */}
-      <section id="results" className="lg:w-screen lg:h-screen flex flex-col justify-center items-center text-center p-20 gap-6">
-      
-      </section>
+      {
+        wine && (
+          <section id="results" className="w-screen h-screen flex flex-col justify-center items-center text-center p-20 gap-6">
+             <h1 className={`${yeseva_one.className} lg:text-8xl md:text-6xl text-4xl text-[#A91D3A]`}>Analysis: {wine} wine.</h1>
+             <Link className="h-[45px] bg-[#A91D3A] w-[300px] text-white flex items-center justify-center rounded-md" href="#analysis">Try Again</Link>
+          </section>
+        )
+      }
 
     </main>
   );

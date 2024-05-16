@@ -60,5 +60,5 @@ async def quality_check(wine: Wine):
     result = model.predict(scaled_array)
 
     return {
-        "Wine Quality": "Good" if result == 1 else "Bad"
+        "wine_quality": "good" if result == 1 else "bad"
     }
