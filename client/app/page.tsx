@@ -62,23 +62,23 @@ export default function Home() {
 
   // Form submit function
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await toast.promise(
-      axios.post('http://localhost:8000/quality', values)
-        .then((response) => {
-          setWine(response.data.wine_quality);
-        })
-        .catch((err) => console.error(err))
-      , 
-      {
-        loading: "Analyzing wine macros.",
-        success: "Wine analysis successful.",
-        error: (err) => `This just happened: ${err.toString()}`,
-      }
-    )
-
-    const response = await axios.post('http://localhost:8000/quality', values);
-    router.push("#results");
-    setWine(response.data.wine_quality);
+    if (process.env.ENDPOINT) {
+      await toast.promise(
+        axios.post(process.env.ENDPOINT, values)
+          .then((response) => {
+            setWine(response.data.wine_quality);
+          })
+          .catch((err) => console.error(err))
+        , 
+        {
+          loading: "Analyzing wine macros.",
+          success: "Wine analysis successful.",
+          error: (err) => `This just happened: ${err.toString()}`,
+        }
+      )
+    } else {
+      toast.error("Client isn't connected to server");
+    }
   }
 
   return (
