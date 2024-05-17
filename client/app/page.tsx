@@ -62,11 +62,12 @@ export default function Home() {
 
   // Form submit function
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (process.env.ENDPOINT) {
+    if (process.env.NEXT_PUBLIC_ENDPOINT) {
       await toast.promise(
-        axios.post(process.env.ENDPOINT, values)
+        axios.post(process.env.NEXT_PUBLIC_ENDPOINT, values)
           .then((response) => {
             setWine(response.data.wine_quality);
+            router.push("#results");
           })
           .catch((err) => console.error(err))
         , 
